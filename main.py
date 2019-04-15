@@ -14,21 +14,87 @@ from kivy.uix.label import Label
 from functools import partial
 from math import cos, sin, pi, floor
 
+global width
+global stepWidth
+global stepHeight
+global size
+
+def updateMesh(value):
+    global width
+    global stepWidth
+    global stepHeight
+    wid.canvas.clear()
+
+
+    height = 550
+    width = 550
+
+    value = int(value)
+    stepWidth = floor(width / (value + 1))
+    stepHeight = floor(height / (value + 1))
+    with wid.canvas:
+        Color(1., 1, 1)
+
+        for index in range(0, value + 1):
+            # poziome   i
+            Line(points=[0.1 * width,
+                         stepHeight * (index + 0.2 * (value + 1)),
+                         value * stepWidth + 0.1 * width,
+                         stepHeight * (index + 0.2 * (value + 1))],
+                 width=1)
+
+            # pionowe   j
+            Line(points=[index * stepWidth + 0.1 * width,
+                         0.2 * stepHeight * (value + 1),
+                         index * stepWidth + 0.1 * width,
+                         stepHeight * (value + 0.2 * (value + 1))],
+                 width=1)
+
+
+    pass
+
+
+def drawStartingPoint(value):
+    global stepWidth
+    global size
+    value=int(value)
+    size=int(size)
+    with wid.canvas:
+        Rectangle(pos=(value * stepWidth + 0.1 * width, stepHeight * (size-1 + 0.2 * (size+1))), size=(stepWidth, stepWidth))
+    pass
+
 
 class CellularAutomatonApp(App):
 
-    def change_mode(self, mode, *largs):
-        self.mesh.mode = mode
+    def on_enter(self, value):
+        #  print('The widget', instance, 'have:', value)
+        updateMesh(value.text)
+
+    def on_enter_starting_point(self, value):
+        #  print('The widget', instance, 'have:', value)
+        drawStartingPoint(value.text)
 
     def build(self):
+        global size
         Window.size = (600, 650)
-        wid = Widget()
 
         layout = FloatLayout(size=(600, 600))
+
+        layout.add_widget(Label(text='Starting point:', size_hint_x=None, width=100, size_hint=(.2, .08),
+                                pos_hint={'x': 0.05, 'y': 1.9}))
+        self.startingPoint = TextInput(size_hint_x=None, width=30, multiline=False, size_hint=(.09, .08),
+                                       pos_hint={'x': .25, 'y': 1.9}, input_filter='int')
+        self.startingPoint.bind(on_text_validate=self.on_enter_starting_point)
+        layout.add_widget(self.startingPoint)
+
         layout.add_widget(Label(text='Enter size:', size_hint_x=None, width=100, size_hint=(.2, .1),
                                 pos_hint={'x': 0.05, 'y': 0.1}))
-        layout.add_widget(TextInput(size_hint_x=None, width=50, multiline=False, size_hint=(.2, .1),
-                                    pos_hint={'x': .25, 'y': .1}))
+
+        self.size = TextInput(size_hint_x=None, width=50, multiline=False, size_hint=(.2, .1),
+                              pos_hint={'x': .25, 'y': .1}, input_filter='int')
+        self.size.bind(on_text_validate=self.on_enter)
+
+        layout.add_widget(self.size)
         layout.add_widget(Label(text='Rule:', size_hint_x=None, width=100, size_hint=(.2, .1),
                                 pos_hint={'x': .40, 'y': .1}))
 
@@ -51,28 +117,12 @@ class CellularAutomatonApp(App):
         root.add_widget(wid)
         root.add_widget(layout)
 
-        height = 550
-        width = 550
-
-        size = 50
-        stepWidth = floor(width / (size+1))
-        stepHeight = floor(height / (size+1))
-        with wid.canvas:
-            Color(1., 1, 1)
-
-            for index in range(0, size+1):
-                #poziome
-                Line(points=[0.1 * width, index * stepHeight + 0.2 * stepHeight * (size+1),
-                             size * stepWidth + 0.1 * width, index * stepHeight + 0.2 * stepHeight * (size+1)],
-                     width=1)
-
-                #pionowe
-                Line(points=[index * stepWidth + 0.1 * width, 0.2 * stepHeight * (size+1),
-                             index * stepWidth + 0.1 * width, size * stepHeight + 0.2 * stepHeight * (size + 1)],
-                     width=1)
+        size = 30
+        updateMesh(30)
 
         return root
 
 
 if __name__ == '__main__':
+    wid = Widget()
     CellularAutomatonApp().run()
