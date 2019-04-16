@@ -1,8 +1,8 @@
 def toBinary(n):
     binArr = []
-    bin = '{:08b}'.format(n)
-    for i in range(len(bin)):
-        if int(bin[i]):
+    binary = '{:08b}'.format(n)
+    for i in range(len(binary)):
+        if int(binary[i]):
             binArr.append(True)
         else:
             binArr.append(False)
@@ -36,7 +36,7 @@ def countValue(regula, a, b, c):
         return regula[7]
 
 
-def calculate(self, surface, size, regula):
+def calculate(surface, size, regula):
     regulaBin = toBinary(regula)
 
     for line in range(1, size):

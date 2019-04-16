@@ -1,28 +1,20 @@
+from math import floor
+
+from kivy.app import App
+from kivy.core.window import Window
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.vertex_instructions import Rectangle, Line
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.core.window import Window
-from kivy.app import App
-from kivy.graphics import Mesh
-from kivy.uix.dropdown import DropDown
-from kivy.uix.label import Label
-from functools import partial
-from math import cos, sin, pi, floor
 
 from algorithm import calculate
 
-global width
-global height
-global stepWidth
-global stepHeight
-global size
-global rule
-global surface
+global width, height, stepHeight, stepWidth, size, rule, surface
 
 
 def updateMesh(value):
@@ -44,14 +36,14 @@ def updateMesh(value):
         Color(1., 1, 1)
 
         for index in range(0, value + 1):
-            # poziome   i
+            # poziome
             Line(points=[0.1 * width,
                          stepHeight * (index + 0.2 * (value + 1)),
                          value * stepWidth + 0.1 * width,
                          stepHeight * (index + 0.2 * (value + 1))],
                  width=1)
 
-            # pionowe   j
+            # pionowe
             Line(points=[index * stepWidth + 0.1 * width,
                          0.2 * stepHeight * (value + 1),
                          index * stepWidth + 0.1 * width,
@@ -61,7 +53,7 @@ def updateMesh(value):
     pass
 
 
-def selected(button, mainbutton):
+def selected(mainbutton):
     global rule
     rule = int(mainbutton[-2:])
     children = layout.children
@@ -69,7 +61,6 @@ def selected(button, mainbutton):
 
 
 def drawStartingPoint(value):
-    global stepWidth
     global size
     global surface
     value = int(value)
@@ -88,53 +79,66 @@ def drawPoints():
             if surface[i][j]:
                 with wid.canvas:
                     Color(1, 1, 1, 1)
-                    Rectangle(pos=(j * stepWidth + 0.1 * width, stepHeight*(size - i-1 + 0.2 * (size + 1))),
+                    Rectangle(pos=(j * stepWidth + 0.1 * width, stepHeight * (size - i - 1 + 0.2 * (size + 1))),
                               size=(stepWidth, stepWidth))
+
+    pass
+
+
+def on_enter_size(value):
+    global size, surface
+    size = int(value.text)
+    surface = [[False for x in range(size)] for y in range(size)]
+
+    updateMesh(value.text)
+
+
+def on_enter_starting_point(value):
+    if int(value.text) > size:
+        return
+    drawStartingPoint(value.text)
+
+
+def calculateAction(self):
+    global surface
+    newSurface = calculate(surface, size, rule)
+    surface = newSurface
+
+    drawPoints()
+
+
+def reset(self):
+    wid.canvas.clear()
+    updateMesh(size)
 
     pass
 
 
 class CellularAutomatonApp(App):
 
-    def on_enter(self, value):
-        global size, surface
-        #  print('The widget', instance, 'have:', value)
-        size = int(value.text)
-        surface = [[False for x in range(size)] for y in range(size)]
-
-        updateMesh(value.text)
-
-    def on_enter_starting_point(self, value):
-        #  print('The widget', instance, 'have:', value)
-        drawStartingPoint(value.text)
-
-    def calculate(self, data):
-        global rule
-        global surface
-        newSurface = calculate(self, surface, size, rule)
-        surface = newSurface
-
-        drawPoints()
-
     def build(self):
-        global size, surface
-        Window.size = (600, 650)
+        Window.size = (600, 680)
 
         layout.add_widget(Label(text='Starting point:', size_hint_x=None, width=100, size_hint=(.2, .08),
                                 pos_hint={'x': 0.05, 'y': 1.9}))
         self.startingPoint = TextInput(size_hint_x=None, width=30, multiline=False, size_hint=(.09, .08),
                                        pos_hint={'x': .25, 'y': 1.9}, input_filter='int')
-        self.startingPoint.bind(on_text_validate=self.on_enter_starting_point)
+        self.startingPoint.bind(on_text_validate=on_enter_starting_point)
         layout.add_widget(self.startingPoint)
+
+        resetButton = Button(text='RESET', size_hint_x=None, width=100, size_hint=(.2, .08),
+                             background_color=(1, 0, 0, 1), pos_hint={'x': 0.7, 'y': 1.9})
+        resetButton.bind(on_press=reset)
+        layout.add_widget(resetButton)
 
         layout.add_widget(Label(text='Enter size:', size_hint_x=None, width=100, size_hint=(.2, .1),
                                 pos_hint={'x': 0.05, 'y': 0.1}))
 
-        self.size = TextInput(size_hint_x=None, width=50, multiline=False, size_hint=(.2, .1),
+        sizeInput = TextInput(size_hint_x=None, width=50, multiline=False, size_hint=(.2, .1),
                               pos_hint={'x': .25, 'y': .1}, input_filter='int')
-        self.size.bind(on_text_validate=self.on_enter)
+        sizeInput.bind(on_text_validate=on_enter_size)
 
-        layout.add_widget(self.size)
+        layout.add_widget(sizeInput)
         layout.add_widget(Label(text='Rule:', size_hint_x=None, width=100, size_hint=(.2, .1),
                                 pos_hint={'x': .40, 'y': .1}))
 
@@ -147,21 +151,18 @@ class CellularAutomatonApp(App):
         mainbutton = Button(text='Choose rule', width=100, size_hint_x=None, size_hint=(.2, .1),
                             pos_hint={'x': .55, 'y': .1})
         mainbutton.bind(on_release=dropdown.open)
-        dropdown.bind(on_select=lambda self, mainbutton: selected(self, mainbutton))
+        dropdown.bind(on_select=lambda self, mainbutton: selected(mainbutton))
 
         layout.add_widget(mainbutton)
 
         calculateButton = Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
                                  pos_hint={'x': 0.75, 'y': 0.1})
-        calculateButton.bind(on_press=self.calculate)
+        calculateButton.bind(on_press=calculateAction)
         layout.add_widget(calculateButton)
 
         root = BoxLayout(orientation='vertical')
         root.add_widget(wid)
         root.add_widget(layout)
-
-        size = 30
-        updateMesh(30)
 
         return root
 
