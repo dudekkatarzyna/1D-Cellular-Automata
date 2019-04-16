@@ -17,6 +17,7 @@ from math import cos, sin, pi, floor
 from algorithm import calculate
 
 global width
+global height
 global stepWidth
 global stepHeight
 global size
@@ -25,7 +26,7 @@ global surface
 
 
 def updateMesh(value):
-    global width
+    global width, height
     global stepWidth
     global stepHeight
     global size
@@ -81,6 +82,18 @@ def drawStartingPoint(value):
     pass
 
 
+def drawPoints():
+    for i in range(size):
+        for j in range(size):
+            if surface[i][j]:
+                with wid.canvas:
+                    Color(1, 1, 1, 1)
+                    Rectangle(pos=(j * stepWidth + 0.1 * width, stepHeight*(size - i-1 + 0.2 * (size + 1))),
+                              size=(stepWidth, stepWidth))
+
+    pass
+
+
 class CellularAutomatonApp(App):
 
     def on_enter(self, value):
@@ -101,6 +114,7 @@ class CellularAutomatonApp(App):
         newSurface = calculate(self, surface, size, rule)
         surface = newSurface
 
+        drawPoints()
 
     def build(self):
         global size, surface
@@ -148,7 +162,6 @@ class CellularAutomatonApp(App):
 
         size = 30
         updateMesh(30)
-
 
         return root
 

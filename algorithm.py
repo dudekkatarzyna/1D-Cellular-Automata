@@ -39,7 +39,7 @@ def countValue(regula, a, b, c):
 def calculate(self, surface, size, regula):
     regulaBin = toBinary(regula)
 
-    for line in range(1, size - 1):
+    for line in range(1, size):
 
         for i in range(size):
 
@@ -59,4 +59,4 @@ def calculate(self, surface, size, regula):
                                    surface[line - 1][i + 1])
                 surface[line][i] = value
 
-        return surface
+    return surface
