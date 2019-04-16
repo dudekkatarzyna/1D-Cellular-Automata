@@ -14,22 +14,29 @@ from kivy.uix.label import Label
 from functools import partial
 from math import cos, sin, pi, floor
 
+from algorithm import calculate
+
 global width
 global stepWidth
 global stepHeight
 global size
+global rule
+global surface
+
 
 def updateMesh(value):
     global width
     global stepWidth
     global stepHeight
-    wid.canvas.clear()
+    global size
 
+    wid.canvas.clear()
 
     height = 550
     width = 550
 
     value = int(value)
+    size = value
     stepWidth = floor(width / (value + 1))
     stepHeight = floor(height / (value + 1))
     with wid.canvas:
@@ -50,38 +57,54 @@ def updateMesh(value):
                          stepHeight * (value + 0.2 * (value + 1))],
                  width=1)
 
-
     pass
+
+
+def selected(button, mainbutton):
+    global rule
+    rule = int(mainbutton[-2:])
+    children = layout.children
+    setattr(children[1], 'text', 'Rule ' + str(rule))
 
 
 def drawStartingPoint(value):
     global stepWidth
     global size
-    value=int(value)
-    size=int(size)
+    global surface
+    value = int(value)
+    size = int(size)
     with wid.canvas:
-        Rectangle(pos=(value * stepWidth + 0.1 * width, stepHeight * (size-1 + 0.2 * (size+1))), size=(stepWidth, stepWidth))
+        Rectangle(pos=(value * stepWidth + 0.1 * width, stepHeight * (size - 1 + 0.2 * (size + 1))),
+                  size=(stepWidth, stepWidth))
+
+    surface[0][value] = True
     pass
 
 
 class CellularAutomatonApp(App):
 
     def on_enter(self, value):
+        global size, surface
         #  print('The widget', instance, 'have:', value)
+        size = int(value.text)
+        surface = [[False for x in range(size)] for y in range(size)]
+
         updateMesh(value.text)
 
     def on_enter_starting_point(self, value):
         #  print('The widget', instance, 'have:', value)
         drawStartingPoint(value.text)
 
-    def calculate(self):
-        print()
+    def calculate(self, data):
+        global rule
+        global surface
+        newSurface = calculate(self, surface, size, rule)
+        surface = newSurface
+
 
     def build(self):
-        global size
+        global size, surface
         Window.size = (600, 650)
-
-        layout = FloatLayout(size=(600, 600))
 
         layout.add_widget(Label(text='Starting point:', size_hint_x=None, width=100, size_hint=(.2, .08),
                                 pos_hint={'x': 0.05, 'y': 1.9}))
@@ -110,11 +133,11 @@ class CellularAutomatonApp(App):
         mainbutton = Button(text='Choose rule', width=100, size_hint_x=None, size_hint=(.2, .1),
                             pos_hint={'x': .55, 'y': .1})
         mainbutton.bind(on_release=dropdown.open)
-        dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
+        dropdown.bind(on_select=lambda self, mainbutton: selected(self, mainbutton))
 
         layout.add_widget(mainbutton)
 
-        calculateButton=Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
+        calculateButton = Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
                                  pos_hint={'x': 0.75, 'y': 0.1})
         calculateButton.bind(on_press=self.calculate)
         layout.add_widget(calculateButton)
@@ -126,9 +149,11 @@ class CellularAutomatonApp(App):
         size = 30
         updateMesh(30)
 
+
         return root
 
 
 if __name__ == '__main__':
+    layout = FloatLayout(size=(600, 600))
     wid = Widget()
     CellularAutomatonApp().run()
