@@ -74,6 +74,9 @@ class CellularAutomatonApp(App):
         #  print('The widget', instance, 'have:', value)
         drawStartingPoint(value.text)
 
+    def calculate(self):
+        print()
+
     def build(self):
         global size
         Window.size = (600, 650)
@@ -110,8 +113,11 @@ class CellularAutomatonApp(App):
         dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
         layout.add_widget(mainbutton)
-        layout.add_widget(Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
-                                 pos_hint={'x': 0.75, 'y': 0.1}))
+
+        calculateButton=Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
+                                 pos_hint={'x': 0.75, 'y': 0.1})
+        calculateButton.bind(on_press=self.calculate)
+        layout.add_widget(calculateButton)
 
         root = BoxLayout(orientation='vertical')
         root.add_widget(wid)
