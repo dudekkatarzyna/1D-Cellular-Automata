@@ -36,10 +36,10 @@ def countValue(regula, a, b, c):
         return regula[7]
 
 
-def calculate(surface, size, regula):
+def calculate(surface, size, regula, iteration):
     regulaBin = toBinary(regula)
 
-    for line in range(1, size):
+    for line in range(1, iteration):
 
         for i in range(size):
 

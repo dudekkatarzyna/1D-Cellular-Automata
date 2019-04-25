@@ -14,50 +14,42 @@ from kivy.uix.widget import Widget
 
 from algorithm import calculate
 
-global width, height, stepHeight, stepWidth, size, rule, surface
+global width, height, stepHeight, stepWidth, size, rule, surface, iteration
 
 
-def updateMesh(value):
+def updateMesh():
     global width, height
     global stepWidth
     global stepHeight
-    global size
+    global size, iteration
 
     wid.canvas.clear()
 
     height = 550
-    width = 550
+    width = 500
 
-    value = int(value)
-    size = value
-    stepWidth = floor(width / (value + 1))
-    stepHeight = floor(height / (value + 1))
+    stepWidth = floor(width / (size + 1))
+    stepHeight = floor(height / (size + 1))
     with wid.canvas:
         Color(1., 1, 1)
 
-        for index in range(0, value + 1):
+        for index in range(0, iteration + 1):
             # poziome
             Line(points=[0.1 * width,
-                         stepHeight * (index + 0.2 * (value + 1)),
-                         value * stepWidth + 0.1 * width,
-                         stepHeight * (index + 0.2 * (value + 1))],
+                         stepHeight * (size - index + 0.2 * (size + 1)),
+                         size * stepWidth + 0.1 * width,
+                         stepHeight * (size - index + 0.2 * (size + 1))],
                  width=1)
 
+        for index in range(0, size + 1):
             # pionowe
-            Line(points=[index * stepWidth + 0.1 * width,
-                         0.2 * stepHeight * (value + 1),
-                         index * stepWidth + 0.1 * width,
-                         stepHeight * (value + 0.2 * (value + 1))],
+            Line(points=[(size - index) * stepWidth + 0.1 * width,
+                         size + ((size - iteration) * stepHeight),
+                         (size - index) * stepWidth + 0.1 * width,
+                         stepHeight * (size + 0.2 * (size + 1))],
                  width=1)
 
     pass
-
-
-def selected(mainbutton):
-    global rule
-    rule = int(mainbutton[-2:])
-    children = layout.children
-    setattr(children[1], 'text', 'Rule ' + str(rule))
 
 
 def drawStartingPoint(value):
@@ -68,13 +60,16 @@ def drawStartingPoint(value):
     with wid.canvas:
         Rectangle(pos=(value * stepWidth + 0.1 * width, stepHeight * (size - 1 + 0.2 * (size + 1))),
                   size=(stepWidth, stepWidth))
+        pass
 
     surface[0][value] = True
     pass
 
 
 def drawPoints():
-    for i in range(size):
+    global iteration
+
+    for i in range(iteration):
         for j in range(size):
             if surface[i][j]:
                 with wid.canvas:
@@ -86,11 +81,22 @@ def drawPoints():
 
 
 def on_enter_size(value):
-    global size, surface
+    global size, surface, iteration
     size = int(value.text)
-    surface = [[False for x in range(size)] for y in range(size)]
 
-    updateMesh(value.text)
+
+def rule_input(value):
+    global rule
+    rule = int(value.text)
+    pass
+
+
+def iteration_input(value):
+    global iteration, surface
+
+    iteration = int(value.text)
+    surface = [[False for x in range(size)] for y in range(iteration)]
+    updateMesh()
 
 
 def on_enter_starting_point(value):
@@ -100,17 +106,17 @@ def on_enter_starting_point(value):
 
 
 def calculateAction(self):
-    global surface
-    newSurface = calculate(surface, size, rule)
+    global surface, rule, iteration
+    newSurface = calculate(surface, size, rule, iteration)
     surface = newSurface
 
+    updateMesh()
     drawPoints()
 
 
 def reset(self):
     wid.canvas.clear()
-    updateMesh(size)
-
+    updateMesh()
     pass
 
 
@@ -142,18 +148,18 @@ class CellularAutomatonApp(App):
         layout.add_widget(Label(text='Rule:', size_hint_x=None, width=100, size_hint=(.2, .1),
                                 pos_hint={'x': .40, 'y': .1}))
 
-        dropdown = DropDown()
-        for index in range(1, 4):
-            btn = Button(text='Rule %d' % (index * 30), size_hint_y=None, height=35)
-            btn.bind(on_release=lambda btn: dropdown.select(btn.text))
-            dropdown.add_widget(btn)
+        ruleInput = TextInput(size_hint_x=None, width=50, multiline=False, size_hint=(.2, .1),
+                              pos_hint={'x': .55, 'y': .1}, input_filter='int')
+        ruleInput.bind(on_text_validate=rule_input)
+        layout.add_widget(ruleInput)
 
-        mainbutton = Button(text='Choose rule', width=100, size_hint_x=None, size_hint=(.2, .1),
-                            pos_hint={'x': .55, 'y': .1})
-        mainbutton.bind(on_release=dropdown.open)
-        dropdown.bind(on_select=lambda self, mainbutton: selected(mainbutton))
+        layout.add_widget(Label(text='Iteration No.:', size_hint_x=None, width=100, size_hint=(.2, .1),
+                                pos_hint={'x': .33, 'y': 1.89}))
 
-        layout.add_widget(mainbutton)
+        iterationInput = TextInput(size_hint_x=None, width=30, multiline=False, size_hint=(.1, .1),
+                                   pos_hint={'x': .5, 'y': 1.89}, input_filter='int')
+        iterationInput.bind(on_text_validate=iteration_input)
+        layout.add_widget(iterationInput)
 
         calculateButton = Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
                                  pos_hint={'x': 0.75, 'y': 0.1})
