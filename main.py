@@ -29,25 +29,27 @@ def updateMesh():
     height = Window.height
     width = Window.width
 
-    stepWidth = floor(width / (size + 1))
-    stepHeight = floor(height / (size + 1))
+
+    stepWidth = floor((0.8*width) / (size + 1))
+    stepHeight = floor(0.7*height / (size + 1))
+
     with wid.canvas:
         Color(1., 1, 1)
 
         for index in range(0, iteration + 1):
             # poziome
             Line(points=[0.1 * width,
-                         stepHeight*(size-index),
-                         size * stepWidth + 0.1 * width,
-                         stepHeight * (size-index)],
+                         0.9*height-stepHeight*index,
+                         size * stepWidth+0.1*width,
+                         0.9*height-stepHeight*index],
                  width=1)
 
         for index in range(0, size + 1):
             # pionowe
-            Line(points=[(size - index) * stepWidth + 0.1 * width,
-                         stepHeight*size,
-                         (size - index) * stepWidth + 0.1 * width,
-                         stepHeight*(size-iteration)],
+            Line(points=[(size - index) * stepWidth+0.1*width,
+                         0.9*height,
+                         (size - index) * stepWidth+0.1*width,
+                         0.9*height-(stepHeight * iteration)],
                  width=1)
 
     pass
@@ -59,7 +61,7 @@ def drawStartingPoint(value):
     value = int(value)
     size = int(size)
     with wid.canvas:
-        Rectangle(pos=(value * stepWidth + 0.1 * width, stepHeight * (size - 1 + 0.2 * (size + 1))),
+        Rectangle(pos=(value * stepWidth + 0.1 * width, 0.9*height-stepHeight),
                   size=(stepWidth, stepWidth))
         pass
 
@@ -75,7 +77,7 @@ def drawPoints():
             if surface[i][j]:
                 with wid.canvas:
                     Color(1, 1, 1, 1)
-                    Rectangle(pos=(j * stepWidth + 0.1 * width, stepHeight * (size - i - 1 + 0.2 * (size + 1))),
+                    Rectangle(pos=(j * stepWidth + 0.1 * width, 0.9*height-((i+1)*stepHeight)),
                               size=(stepWidth, stepWidth))
 
     pass
@@ -166,24 +168,8 @@ class NewClass(FloatLayout):
 
         calculateButton = Button(text='Calculate', size_hint_x=None, width=100, size_hint=(.2, .1),
                                  pos_hint={'x': 0.75, 'y': 0.1})
-        calculateButton.bind(on_press=self.tmp)
+        calculateButton.bind(on_press=calculateAction)
         self.add_widget(calculateButton)
-
-
-    def tmp(self, *args):
-        global width, height
-
-
-        with self.canvas.before:
-            Color(1, 0, 0, 1)
-            Rectangle(pos=self.pos,
-                      size=self.size)
-
-        print(self.width)
-        print(self.height)
-
-        print(width)
-        print(height)
 
 
 class CellularAutomatonApp(App):
