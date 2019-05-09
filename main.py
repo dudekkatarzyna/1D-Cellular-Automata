@@ -29,9 +29,12 @@ def updateMesh():
     height = Window.height
     width = Window.width
 
-
-    stepWidth = floor((0.8*width) / (size + 1))
-    stepHeight = floor(0.7*height / (size + 1))
+    if(iteration>size):
+        stepWidth = floor((0.8 * width) / (iteration + 1))
+        stepHeight = floor(0.7 * height / (iteration + 1))
+    else:
+        stepWidth = floor((0.8 * width) / (size + 1))
+        stepHeight = floor(0.7 * height / (size + 1))
 
     with wid.canvas:
         Color(1., 1, 1)
@@ -39,17 +42,17 @@ def updateMesh():
         for index in range(0, iteration + 1):
             # poziome
             Line(points=[0.1 * width,
-                         0.9*height-stepHeight*index,
-                         size * stepWidth+0.1*width,
-                         0.9*height-stepHeight*index],
+                         0.9 * height - stepHeight * index,
+                         size * stepWidth + 0.1 * width,
+                         0.9 * height - stepHeight * index],
                  width=1)
 
         for index in range(0, size + 1):
             # pionowe
-            Line(points=[(size - index) * stepWidth+0.1*width,
-                         0.9*height,
-                         (size - index) * stepWidth+0.1*width,
-                         0.9*height-(stepHeight * iteration)],
+            Line(points=[(size - index) * stepWidth + 0.1 * width,
+                         0.9 * height,
+                         (size - index) * stepWidth + 0.1 * width,
+                         0.9 * height - (stepHeight * iteration)],
                  width=1)
 
     pass
@@ -61,7 +64,7 @@ def drawStartingPoint(value):
     value = int(value)
     size = int(size)
     with wid.canvas:
-        Rectangle(pos=(value * stepWidth + 0.1 * width, 0.9*height-stepHeight),
+        Rectangle(pos=(value * stepWidth + 0.1 * width, 0.9 * height - stepHeight),
                   size=(stepWidth, stepWidth))
         pass
 
@@ -77,7 +80,7 @@ def drawPoints():
             if surface[i][j]:
                 with wid.canvas:
                     Color(1, 1, 1, 1)
-                    Rectangle(pos=(j * stepWidth + 0.1 * width, 0.9*height-((i+1)*stepHeight)),
+                    Rectangle(pos=(j * stepWidth + 0.1 * width, 0.9 * height - ((i + 1) * stepHeight)),
                               size=(stepWidth, stepWidth))
 
     pass
